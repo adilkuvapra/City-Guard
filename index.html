@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CityGuard - Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --nav-height: 70px;
+            --sos-red: #ef4444;
+            --sos-red-dark: #dc2626;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* SOS Button - Fixed Position */
+        .sos-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--sos-red), var(--sos-red-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+            text-transform: uppercase;
+            box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4);
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            outline: none;
+            user-select: none;
+            animation: sos-pulse 2s infinite;
+        }
+
+        .sos-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(239, 68, 68, 0.6);
+        }
+
+        .sos-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.8);
+        }
+
+        .sos-button.active {
+            animation: sos-alarm 0.5s infinite alternate;
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+        }
+
+        @keyframes sos-pulse {
+            0% { box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 8px 40px rgba(239, 68, 68, 0.7); }
+            100% { box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4); }
+        }
+
+        @keyframes sos-alarm {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            }
+            100% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 40px rgba(255, 0, 0, 1);
+            }
+        }
+
+        /* SOS Modal */
+        .sos-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sos-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .sos-modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            animation: modalAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes modalAppear {
+            to { transform: scale(1); }
+        }
+
+        .sos-modal-header {
+            background: linear-gradient(135deg, var(--sos-red), var(--sos-red-dark));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .sos-modal-body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .sos-countdown {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--sos-red);
+            margin: 20px 0;
+        }
+
+        .sos-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .sos-progress {
+            height: 100%;
+            background: var(--sos-red);
+            width: 0%;
+            transition: width 1s linear;
+        }
+
+        .sos-modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .sos-cancel-btn {
+            flex: 1;
+            padding: 15px;
+            background: #64748b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sos-cancel-btn:hover {
+            background: #475569;
+        }
+
+        .sos-confirm-btn {
+            flex: 1;
+            padding: 15px;
+            background: var(--sos-red);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sos-confirm-btn:hover {
+            background: #dc2626;
+        }
+
+        .sos-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .sos-success .sos-countdown {
+            color: #10b981;
+        }
+
+        /* Navigation */
+        .navbar {
+            height: var(--nav-height);
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--dark);
+            text-decoration: none;
+        }
+        .brand-icon {
+            width: 32px; height: 32px;
+            background: var(--primary);
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .tab-link {
+            text-decoration: none;
+            color: var(--gray);
+            font-weight: 600;
+            font-size: 15px;
+            padding: 10px 0;
+            position: relative;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab-link:hover { color: var(--primary); }
+        .tab-link.active { color: var(--primary); }
+        
+        .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.3s ease;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Home Tab */
+        .hero-text { 
+            font-size: 40px; 
+            font-weight: 800; 
+            color: var(--dark); 
+            margin-bottom: 20px; 
+        }
+        
+        .grid-cards { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 30px; 
+            margin-top: 40px; 
+        }
+        
+        .card { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card.clickable::after {
+            content: '→';
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            color: var(--primary);
+            font-size: 20px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .card.clickable:hover::after {
+            opacity: 1;
+            transform: translateX(5px);
+        }
+
+        /* Report Form */
+        .report-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        }
+        
+        .input-group { 
+            margin-bottom: 25px; 
+        }
+        
+        .label { 
+            font-size: 13px; 
+            font-weight: 700; 
+            color: var(--gray); 
+            display: block; 
+            margin-bottom: 8px; 
+            text-transform: uppercase; 
+        }
+        
+        .input { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            outline: none; 
+            transition: 0.2s; 
+            font-size: 15px;
+        }
+        
+        .input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1); 
+        }
+        
+        .slider-row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 10px; 
+        }
+        
+        .slider-val { 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: var(--primary); 
+        }
+        
+        input[type=range] { 
+            width: 100%; 
+            height: 8px; 
+            background: #e2e8f0; 
+            border-radius: 4px; 
+            -webkit-appearance: none; 
+        }
+        
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            width: 24px; 
+            height: 24px; 
+            background: var(--primary); 
+            border-radius: 50%; 
+            border: 4px solid white; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+            cursor: pointer; 
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+        
+        .submit-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+        }
+
+        /* System Status Box */
+        .status-box {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 1px solid #bae6fd;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+        }
+        
+        .status-box h3 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .status-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .status-card h4 {
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .status-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        .status-card .subtext {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-item .number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-item .label {
+            font-size: 13px;
+            color: var(--gray);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Awareness Tab Styles */
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 0 20px; }
+            .nav-links { gap: 20px; }
+            .tab-content { padding: 20px; }
+            .grid-cards, .status-cards, .quick-stats { grid-template-columns: 1fr; }
+            .hero-text { font-size: 32px; }
+            .sos-button {
+                width: 70px;
+                height: 70px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sos-button {
+                width: 60px;
+                height: 60px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SOS Button (Always Visible) -->
+    <button class="sos-button" onclick="triggerSOS()">
+        SOS
+    </button>
+
+    <!-- SOS Confirmation Modal -->
+    <div id="sosModal" class="sos-modal">
+        <div class="sos-modal-content">
+            <div class="sos-modal-header">
+                <i class="fa-solid fa-triangle-exclamation fa-3x mb-4"></i>
+                <h2 class="text-2xl font-bold">EMERGENCY SOS ALERT</h2>
+                <p class="opacity-90">High-priority emergency notification</p>
+            </div>
+            
+            <div class="sos-modal-body">
+                <p class="text-gray-700 mb-4">
+                    <strong>This will send a HIGH PRIORITY emergency alert to:</strong>
+                </p>
+                
+                <div class="bg-red-50 p-4 rounded-lg mb-6 text-left">
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-shield-alt text-red-600 mr-3"></i>
+                            <span>Local Police Control Room (100)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-ambulance text-red-600 mr-3"></i>
+                            <span>Emergency Medical Services (108)</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-building text-red-600 mr-3"></i>
+                            <span>CityGuard Emergency Response Team</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa-solid fa-location-dot text-red-600 mr-3"></i>
+                            <span>Your location will be shared automatically</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="sos-countdown" id="sosCountdown">5</div>
+                <p class="text-gray-600 mb-4">Alert will be sent automatically in <span id="countdownSeconds">5</span> seconds</p>
+                
+                <div class="sos-progress-bar">
+                    <div class="sos-progress" id="sosProgress"></div>
+                </div>
+                
+                <div class="sos-modal-actions">
+                    <button class="sos-cancel-btn" onclick="cancelSOS()">
+                        <i class="fa-solid fa-times mr-2"></i> CANCEL
+                    </button>
+                    <button class="sos-confirm-btn" onclick="confirmSOS()">
+                        <i class="fa-solid fa-bolt mr-2"></i> SEND NOW
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="brand">
+            <div class="brand-icon"></div>
+            <span>CityGuard</span>
+        </div>
+
+        <div class="nav-links">
+            <div class="tab-link active" onclick="switchTab('home', this)">Dashboard</div>
+            <div class="tab-link" onclick="window.location.href='map.html'">Live Map</div>
+            <div class="tab-link" onclick="switchTab('report', this)">Report</div>
+            <div class="tab-link" onclick="switchTab('awareness', this)">Awareness</div>
+        </div>
+    </nav>
+
+    <div class="content-area">
+        <!-- TAB 1: DASHBOARD -->
+        <div id="home" class="tab-content active">
+            <div class="max-w-6xl mx-auto">
+                <h1 class="hero-text">Welcome to CityGuard</h1>
+                <p class="text-gray-600 text-lg mb-6">Smart Traffic & Hazard Monitoring System</p>
+                
+                <!-- Emergency Alert Banner -->
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-xl p-4 mb-8">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">🚨 Emergency SOS Button Available</h3>
+                            <p class="text-gray-600 text-sm">Click the red SOS button at the bottom-right for immediate emergency assistance. Your location will be automatically shared.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-item">
+                        <div class="number">24/7</div>
+                        <div class="label">Monitoring</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">50+</div>
+                        <div class="label">Cities</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">98%</div>
+                        <div class="label">Accuracy</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">1000+</div>
+                        <div class="label">Sensors</div>
+                    </div>
+                </div>
+                
+                <!-- Feature Cards -->
+                <div class="grid-cards">
+                    <div class="card">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-car-burst text-red-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Active Monitoring</h3>
+                        </div>
+                        <p class="text-gray-600">Real-time traffic accident and hazard detection across Indian cities with AI-powered alerts.</p>
+                    </div>
+                    
+                    <div class="card clickable" onclick="window.location.href='map.html'">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-map text-blue-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Interactive Map</h3>
+                        </div>
+                        <p class="text-gray-600">Click to access live heatmaps, accident spots, hazard zones, and voice-controlled navigation.</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-chart-line text-green-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Live Analytics</h3>
+                        </div>
+                        <p class="text-gray-600">Database simulation with real-time traffic flow calculations and predictive analysis.</p>
+                    </div>
+                </div>
+                
+                <!-- System Status -->
+                <div class="status-box">
+                    <h3>📊 System Overview</h3>
+                    <p class="text-gray-600 mb-6">Monitor real-time system performance and city safety metrics.</p>
+                    
+                    <div class="status-cards">
+                        <div class="status-card">
+                            <h4>Traffic Flow</h4>
+                            <div class="value text-green-600">92%</div>
+                            <div class="subtext">Smooth Operation</div>
+                        </div>
+                        
+                        <div class="status-card">
+                            <h4>Response Time</h4>
+                            <div class="value">2.3s</div>
+                            <div class="subtext">Average Alert Delay</div>
+                        </div>
+                        
+                        <div class="status-card">
+                            <h4>Coverage</h4>
+                            <div class="value">96%</div>
+                            <div class="subtext">Urban Areas Covered</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="mt-8">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">📈 Recent Activity</h4>
+                        <div class="bg-white rounded-xl p-4">
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                    <span class="text-gray-700">System Sync Completed</span>
+                                </div>
+                                <span class="text-gray-500 text-sm">2 min ago</span>
+                            </div>
+                            <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                                    <span class="text-gray-700">Database Connection Active</span>
+                                </div>
+                                <span class="text-gray-500 text-sm">5 min ago</span>
+                            </div>
+                            <div class="flex items-center justify-between py-3">
+                                <div class="flex items-center">
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                    <span class="text-gray-700">3 New Reports Received</span>
+                                </div>
+                                <span class="text-gray-500 text-sm">15 min ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <!-- SQL Database Connection Status (Simulated) -->
+                <div class="mt-12">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-300 rounded-2xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-gray-800 flex items-center">
+                                    <i class="fa-solid fa-database mr-3 text-blue-600"></i>
+                                    Database Connection Status
+                                </h3>
+                                <p class="text-gray-600 mt-2">Live SQL database connection simulation</p>
+                            </div>
+                            <button onclick="simulateSQLConnection()" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2">
+                                <i class="fa-solid fa-plug"></i>
+                                Test Database Connection
+                            </button>
+                        </div>
+                        
+                        <!-- Connection Status Indicator -->
+                        <div class="flex items-center mb-6">
+                            <div class="w-4 h-4 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                            <span class="text-gray-700 font-medium">MySQL Database: <span class="text-green-600 font-bold">Ready to Connect</span></span>
+                            <span class="ml-4 text-sm text-gray-500">(Simulated for presentation)</span>
+                        </div>
+                        
+                        <!-- Database Stats -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-200">
+                                <div class="text-xs text-gray-500 mb-1">DATABASE</div>
+                                <div class="font-bold text-blue-600 text-lg">cityguard_db</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-200">
+                                <div class="text-xs text-gray-500 mb-1">TABLES</div>
+                                <div class="font-bold text-green-600 text-lg">12</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-200">
+                                <div class="text-xs text-gray-500 mb-1">ACTIVE USERS</div>
+                                <div class="font-bold text-purple-600 text-lg">247</div>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm text-center border border-gray-200">
+                                <div class="text-xs text-gray-500 mb-1">UPTIME</div>
+                                <div class="font-bold text-yellow-600 text-lg">99.8%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Query Output Area (Hidden initially) -->
+                        <div id="sqlConnectionStatus" class="hidden">
+                            <div class="bg-gray-900 text-gray-100 rounded-xl p-4 mb-6 font-mono text-sm">
+                                <div class="flex justify-between items-center mb-3">
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                                        <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                                        <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                        <span class="text-gray-400">terminal ~ mysql</span>
+                                    </div>
+                                    <span class="text-gray-400 text-xs">Connected to: localhost:3306</span>
+                                </div>
+                                
+                                <pre class="overflow-x-auto whitespace-pre-wrap text-green-300">
+mysql> SELECT @@version;
++-------------------------+
+| @@version               |
++-------------------------+
+| 8.0.33                  |
++-------------------------+
+1 row in set (0.00 sec)
+
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| cityguard_db       |
+| incidents_log      |
+| user_reports       |
+| emergency_alerts   |
+| traffic_data       |
+| sensor_readings    |
+| analytics_cache    |
++--------------------+
+7 rows in set (0.01 sec)
+
+mysql> USE cityguard_db;
+Database changed
+
+mysql> SELECT COUNT(*) as total_incidents FROM incidents_log;
++-----------------+
+| total_incidents |
++-----------------+
+| 1,247           |
++-----------------+
+1 row in set (0.02 sec)
+
+mysql> SELECT incident_type, COUNT(*) as count 
+    -> FROM incidents_log 
+    -> WHERE date >= CURDATE() - INTERVAL 7 DAY
+    -> GROUP BY incident_type 
+    -> ORDER BY count DESC;
++----------------+-------+
+| incident_type  | count |
++----------------+-------+
+| traffic_accident | 42   |
+| road_hazard      | 28   |
+| lost_found       | 15   |
+| waterlogging     | 12   |
+| other            | 8    |
++----------------+-------+
+5 rows in set (0.03 sec)
+                                </pre>
+                            </div>
+                            
+                            <!-- Live Query Simulation -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                    <i class="fa-solid fa-bolt text-blue-600 mr-2"></i>
+                                    Live Query Monitor
+                                </h4>
+                                <div id="liveQueries" class="space-y-2">
+                                    <div class="text-sm text-gray-700 bg-white p-3 rounded-lg border">
+                                        <span class="font-mono text-green-600">></span> 
+                                        <span class="font-mono">SELECT * FROM emergency_alerts WHERE status='active';</span>
+                                        <span class="text-gray-500 text-xs ml-2">→ 3 rows returned</span>
+                                    </div>
+                                    <div class="text-sm text-gray-700 bg-white p-3 rounded-lg border">
+                                        <span class="font-mono text-green-600">></span> 
+                                        <span class="font-mono">UPDATE sensor_status SET last_ping=NOW();</span>
+                                        <span class="text-green-500 text-xs ml-2">✓ Updated 48 rows</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center text-gray-500 text-sm">
+                            <i class="fa-solid fa-info-circle mr-2"></i>
+                            This is a simulated database connection for demonstration purposes
+                        </div>
+                    </div>
+                </div>
+        </div>
+                       
+                        
+
+        <!-- TAB 3: REPORT -->
+        <div id="report" class="tab-content">
+            <div class="report-wrapper">
+                <!-- Lost & Found Section (New) -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-600 rounded-xl p-6 mb-8 shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa-solid fa-magnifying-glass text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">🔍 Lost & Found Items</h3>
+                            <p class="text-gray-600 text-sm">Report lost items or found property on public roads/transport</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button class="bg-white border border-purple-200 hover:border-purple-400 text-purple-700 font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-md hover:bg-purple-50 flex items-center justify-center gap-2" onclick="switchToLostForm()">
+                            <i class="fa-solid fa-person-walking-luggage"></i>
+                            I Lost Something
+                        </button>
+                        
+                        <button class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2" onclick="switchToFoundForm()">
+                            <i class="fa-solid fa-hand-holding-heart"></i>
+                            I Found Something
+                        </button>
+                    </div>
+                    
+                    <div class="mt-4 text-xs text-gray-500">
+                        <i class="fa-solid fa-info-circle mr-1"></i>
+                        Items are logged in our city-wide database and matched automatically
+                    </div>
+                </div>
+                
+                <!-- Original Report Form -->
+                <div class="form-box">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Submit Incident Report</h2>
+                    <p class="text-gray-600 mb-8">Report traffic accidents, hazards, or road issues</p>
+                    
+                    <div class="input-group">
+                        <label class="label">Incident Type</label>
+                        <select class="input" id="incidentType">
+                            <option value="">Select incident type</option>
+                            <option value="accident">Traffic Accident</option>
+                            <option value="hazard">Road Hazard</option>
+                            <option value="congestion">Traffic Congestion</option>
+                            <option value="damage">Road Damage</option>
+                            <option value="lost-found">Lost & Found Item</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Lost & Found Details (Hidden by default) -->
+                    <div id="lostFoundSection" class="hidden">
+                        <div class="input-group">
+                            <label class="label">Item Type</label>
+                            <select class="input" id="itemType">
+                                <option value="">Select item type</option>
+                                <option value="wallet">Wallet/Purse</option>
+                                <option value="phone">Mobile Phone</option>
+                                <option value="keys">Keys</option>
+                                <option value="documents">Documents</option>
+                                <option value="jewelry">Jewelry</option>
+                                <option value="bag">Bag/Luggage</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="label">Item Description</label>
+                            <textarea class="input" id="itemDescription" rows="3" placeholder="Describe the item (color, brand, identifying marks)"></textarea>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="label">Approximate Value</label>
+                            <select class="input" id="itemValue">
+                                <option value="">Select value range</option>
+                                <option value="low">Low (under ₹1,000)</option>
+                                <option value="medium">Medium (₹1,000-₹10,000)</option>
+                                <option value="high">High (over ₹10,000)</option>
+                                <option value="sentimental">Sentimental Value</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="label">Contact Preference</label>
+                            <div class="flex gap-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="contactPref" value="email" checked class="mr-2">
+                                    <span class="text-gray-700">Email</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="contactPref" value="phone" class="mr-2">
+                                    <span class="text-gray-700">Phone</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="contactPref" value="both" class="mr-2">
+                                    <span class="text-gray-700">Both</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Original form fields (shown by default) -->
+                    <div id="regularReportSection">
+                        <div class="input-group">
+                            <label class="label">Location</label>
+                            <input type="text" class="input" id="location" placeholder="e.g., MG Road, Bangalore">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="label">City</label>
+                            <select class="input" id="city">
+                                <option value="">Select city</option>
+                                <option>Delhi</option>
+                                <option>Mumbai</option>
+                                <option>Bangalore</option>
+                                <option>Chennai</option>
+                                <option>Kolkata</option>
+                                <option>Hyderabad</option>
+                                <option>Pune</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <div class="bg-gray-50 p-5 rounded-xl border border-gray-200">
+                                <label class="label" style="color:var(--dark);">Severity Level (1-10)</label>
+                                
+                                <div class="slider-row">
+                                    <span class="text-sm font-semibold text-gray-500">Minor</span>
+                                    <span class="slider-val" id="scaleDisplay">5.0</span>
+                                    <span class="text-sm font-semibold text-gray-500">Critical</span>
+                                </div>
+                                
+                                <input type="range" min="1" max="10" step="0.5" value="5" id="riskSlider" oninput="updateScale(this.value)" class="mt-2">
+                                
+                                <div class="flex justify-between mt-4">
+                                    <span class="text-xs text-green-600 font-semibold">1-3: Low</span>
+                                    <span class="text-xs text-yellow-600 font-semibold">4-7: Medium</span>
+                                    <span class="text-xs text-red-600 font-semibold">8-10: High</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="label">Description</label>
+                            <textarea class="input" id="description" rows="5" placeholder="Describe the incident in detail..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Common fields for both types -->
+                    <div class="input-group">
+                        <label class="label">Contact Email (Optional)</label>
+                        <input type="email" class="input" id="email" placeholder="your.email@example.com">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="label">Contact Phone (Optional)</label>
+                        <input type="tel" class="input" id="phone" placeholder="+91 98765 43210">
+                    </div>
+                    
+                    <button class="submit-btn" onclick="submitReport()">
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Submit Report
+                    </button>
+                    
+                    <p class="text-gray-500 text-sm text-center mt-4">
+                        Reports are reviewed by CityGuard officials.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: AWARENESS -->
+        <div id="awareness" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <h1 class="hero-text">Safety Awareness Hub</h1>
+                <p class="text-gray-600 text-lg mb-6">Learn about common hazards, preventive measures, and safety tips</p>
+                
+                <!-- Quick Stats Banner -->
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-2xl p-6 mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">🏆 City Safety Score: <span class="text-blue-600">88/100</span></h3>
+                            <p class="text-gray-600">Based on recent incident reports and preventive measures</p>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 font-bold px-4 py-2 rounded-lg">
+                            <i class="fa-solid fa-shield-check mr-2"></i>Safety Active
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Disaster Awareness Section -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fa-solid fa-triangle-exclamation text-orange-500 mr-3"></i>
+                        Disaster & Hazard Awareness
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Card 1: Road Accidents -->
+                        <div class="card hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showDetails('accidents')">
+                            <div class="relative h-48 mb-4 overflow-hidden rounded-lg">
+                                <div class="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-car-burst text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-3">
+                                    <h4 class="font-bold">Road Accidents</h4>
+                                    <p class="text-xs">#1 Urban Hazard</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Road Traffic Accidents</h3>
+                            <p class="text-gray-600 text-sm mb-3">Most common in urban areas during peak hours</p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa-solid fa-clock mr-1"></i>
+                                <span>Peak: 8-10 AM & 5-7 PM</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 2: Waterlogging -->
+                        <div class="card hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showDetails('waterlogging')">
+                            <div class="relative h-48 mb-4 overflow-hidden rounded-lg">
+                                <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-water text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-3">
+                                    <h4 class="font-bold">Waterlogging</h4>
+                                    <p class="text-xs">Monsoon Season Risk</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Urban Waterlogging</h3>
+                            <p class="text-gray-600 text-sm mb-3">Flooded roads during heavy rains cause traffic chaos</p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa-solid fa-calendar mr-1"></i>
+                                <span>Season: June-September</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 3: Fire Hazards -->
+                        <div class="card hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="showDetails('fire')">
+                            <div class="relative h-48 mb-4 overflow-hidden rounded-lg">
+                                <div class="absolute inset-0 bg-gradient-to-br from-red-600 to-yellow-500 flex items-center justify-center">
+                                    <i class="fa-solid fa-fire text-white text-5xl"></i>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white p-3">
+                                    <h4 class="font-bold">Fire Hazards</h4>
+                                    <p class="text-xs">Commercial/Residential</p>
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">Building Fires</h3>
+                            <p class="text-gray-600 text-sm mb-3">Electrical faults, kitchen fires, industrial accidents</p>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fa-solid fa-temperature-high mr-1"></i>
+                                <span>High Risk: Summer Months</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Info Panel (Hidden by default) -->
+                <div id="detailPanel" class="hidden bg-white rounded-2xl shadow-xl p-8 mb-8 border border-gray-200">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h2 id="detailTitle" class="text-2xl font-bold text-gray-800"></h2>
+                            <p id="detailSubtitle" class="text-gray-600"></p>
+                        </div>
+                        <button onclick="hideDetails()" class="text-gray-500 hover:text-gray-700">
+                            <i class="fa-solid fa-times text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Statistics & Impact</h3>
+                            <div id="detailStats" class="space-y-3"></div>
+                            
+                            <h3 class="text-lg font-bold text-gray-800 mt-6 mb-4">⚠️ Warning Signs</h3>
+                            <ul id="detailWarnings" class="list-disc pl-5 space-y-2 text-gray-700"></ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-4">🛡️ Preventive Measures</h3>
+                            <div id="detailPreventions" class="space-y-4"></div>
+                            
+                            <h3 class="text-lg font-bold text-gray-800 mt-6 mb-4">🚨 Emergency Response</h3>
+                            <ul id="detailEmergency" class="list-disc pl-5 space-y-2 text-gray-700"></ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">📞 Emergency Contacts</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="bg-red-50 p-4 rounded-lg text-center">
+                                <i class="fa-solid fa-phone-alt text-red-600 text-xl mb-2"></i>
+                                <div class="font-bold text-gray-800">Police</div>
+                                <div class="text-sm text-gray-600">100</div>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg text-center">
+                                <i class="fa-solid fa-ambulance text-red-600 text-xl mb-2"></i>
+                                <div class="font-bold text-gray-800">Ambulance</div>
+                                <div class="text-sm text-gray-600">102 / 108</div>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg text-center">
+                                <i class="fa-solid fa-fire-extinguisher text-red-600 text-xl mb-2"></i>
+                                <div class="font-bold text-gray-800">Fire</div>
+                                <div class="text-sm text-gray-600">101</div>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg text-center">
+                                <i class="fa-solid fa-phone-volume text-blue-600 text-xl mb-2"></i>
+                                <div class="font-bold text-gray-800">Women Helpline</div>
+                                <div class="text-sm text-gray-600">1091</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Common Safety Tips Section -->
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fa-solid fa-lightbulb text-yellow-500 mr-3"></i>
+                        Common Safety Tips for Public Awareness
+                    </h2>
+                    
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-6 mb-8">
+                        <div class="flex items-center mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                                <i class="fa-solid fa-user-shield text-green-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Safety First: Everyday Precautions</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Tip 1 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-car text-blue-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Road Safety</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Always use seatbelts/helmets</li>
+                                    <li>• Don't use mobile while driving</li>
+                                    <li>• Follow traffic signals strictly</li>
+                                    <li>• Maintain safe distance</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Tip 2 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-umbrella text-yellow-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Monsoon Precautions</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Avoid flooded underpasses</li>
+                                    <li>• Check weather before travel</li>
+                                    <li>• Keep emergency kit in car</li>
+                                    <li>• Watch for fallen trees/wires</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Tip 3 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-fire text-red-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Fire Safety</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Install smoke detectors</li>
+                                    <li>• Keep fire extinguishers handy</li>
+                                    <li>• Know emergency exits</li>
+                                    <li>• Avoid overloading sockets</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Tip 4 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-mobile-alt text-purple-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Personal Safety</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Share live location with family</li>
+                                    <li>• Keep emergency numbers saved</li>
+                                    <li>• Avoid lonely areas at night</li>
+                                    <li>• Trust your instincts</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Tip 5 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-first-aid text-green-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Emergency Preparedness</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Keep first-aid kit accessible</li>
+                                    <li>• Learn basic CPR/first aid</li>
+                                    <li>• Have emergency contacts ready</li>
+                                    <li>• Know nearest hospitals</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Tip 6 -->
+                            <div class="bg-white p-5 rounded-xl shadow-sm">
+                                <div class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-cloud-sun text-cyan-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-800 mb-2">Weather Awareness</h4>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>• Check air quality index (AQI)</li>
+                                    <li>• Stay hydrated in summer</li>
+                                    <li>• Dress appropriately for weather</li>
+                                    <li>• Follow weather alerts</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-bullhorn text-blue-600 text-xl mr-3"></i>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Important Reminder</h4>
+                                    <p class="text-sm text-gray-600">Download the "CityGuard Alert" app for real-time safety notifications and emergency assistance.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Safety Checklist -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">✅ Monthly Safety Checklist</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Test smoke detectors & fire alarms</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Check vehicle tires & brakes</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Review emergency evacuation plan</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Update emergency contact list</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Restock first-aid supplies</span>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" class="mr-3 h-5 w-5 rounded border-gray-300">
+                                <span class="text-gray-700">Practice emergency drills with family</span>
+                            </div>
+                        </div>
+                        <button class="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-all">
+                            <i class="fa-solid fa-download mr-2"></i>Download Complete Checklist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FontAwesome Icons -->
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    
+    <script>
+        // Tab Switching
+        function switchTab(tabId, element) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-link').forEach(el => {
+                if (!el.href) { // Only for non-link tabs
+                    el.classList.remove('active');
+                }
+            });
+            
+            // Add active to clicked tab (if it's not a link)
+            if (element && !element.href) {
+                element.classList.add('active');
+            }
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const content = document.getElementById(tabId);
+            if (content) {
+                content.classList.add('active');
+            }
+        }
+
+        // Scale Slider
+        function updateScale(val) {
+            const display = document.getElementById('scaleDisplay');
+            display.innerText = parseFloat(val).toFixed(1);
+            
+            // Dynamic Color Change
+            if(val < 4) { 
+                display.style.color = "#22c55e"; // Green
+            } else if(val < 7) { 
+                display.style.color = "#eab308"; // Orange
+            } else { 
+                display.style.color = "#ef4444"; // Red
+            }
+        }
+
+        // Toggle Lost & Found form fields
+        function toggleLostFoundFields(show) {
+            const lostFoundSection = document.getElementById('lostFoundSection');
+            const regularReportSection = document.getElementById('regularReportSection');
+            
+            if (show) {
+                lostFoundSection.classList.remove('hidden');
+                regularReportSection.classList.add('hidden');
+            } else {
+                lostFoundSection.classList.add('hidden');
+                regularReportSection.classList.remove('hidden');
+            }
+        }
+        
+        // Switch to Lost form
+        function switchToLostForm() {
+            document.getElementById('incidentType').value = 'lost-found';
+            toggleLostFoundFields(true);
+            // Scroll to form
+            document.getElementById('report').scrollTo({top: 200, behavior: 'smooth'});
+        }
+        
+        // Switch to Found form
+        function switchToFoundForm() {
+            document.getElementById('incidentType').value = 'lost-found';
+            toggleLostFoundFields(true);
+            // Scroll to form
+            document.getElementById('report').scrollTo({top: 200, behavior: 'smooth'});
+        }
+        
+        // Submit Report (UPDATED VERSION)
+        function submitReport() {
+            const incidentType = document.getElementById('incidentType').value;
+            const severity = document.getElementById('scaleDisplay').innerText;
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Submitting...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                let message = '';
+                
+                if (incidentType === 'lost-found') {
+                    const itemType = document.getElementById('itemType').value;
+                    message = itemType === 'wallet' || itemType === 'phone' ? 
+                        'Lost & Found report submitted! We\'ll notify you if a match is found.' :
+                        'Lost & Found report submitted to city database.';
+                } else {
+                    message = 'Incident report submitted successfully! Our team will review it shortly.';
+                }
+                
+                // Show success message
+                submitBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Report Submitted!';
+                submitBtn.style.background = "#10b981";
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.style.background = "";
+                    submitBtn.disabled = false;
+                    
+                    // Show success notification
+                    alert(message);
+                    
+                    // Reset form
+                    resetForm();
+                    
+                }, 2000);
+            }, 1500);
+        }
+        
+        // Reset form function
+        function resetForm() {
+            document.querySelectorAll('.input, textarea, select').forEach(input => {
+                if (input.id !== 'riskSlider') {
+                    input.value = '';
+                }
+            });
+            document.getElementById('incidentType').value = '';
+            document.getElementById('riskSlider').value = 5;
+            updateScale(5);
+            toggleLostFoundFields(false);
+        }
+        
+        // Event listener for incident type change
+        document.addEventListener('DOMContentLoaded', function() {
+            const incidentTypeSelect = document.getElementById('incidentType');
+            if (incidentTypeSelect) {
+                incidentTypeSelect.addEventListener('change', function() {
+                    toggleLostFoundFields(this.value === 'lost-found');
+                });
+            }
+        });
+
+        // Awareness Tab Functions
+        function showDetails(type) {
+            const panel = document.getElementById('detailPanel');
+            const title = document.getElementById('detailTitle');
+            const subtitle = document.getElementById('detailSubtitle');
+            const stats = document.getElementById('detailStats');
+            const warnings = document.getElementById('detailWarnings');
+            const preventions = document.getElementById('detailPreventions');
+            const emergency = document.getElementById('detailEmergency');
+            
+            panel.classList.remove('hidden');
+            
+            // Scroll to details panel
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Set content based on type
+            if (type === 'accidents') {
+                title.textContent = 'Road Traffic Accidents';
+                subtitle.textContent = 'Urban India\'s #1 Safety Concern';
+                
+                stats.innerHTML = `
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="text-gray-700">Annual Incidents</span>
+                        <span class="font-bold text-red-600">4.5 Lakh+</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                        <span class="text-gray-700">Fatalities (Yearly)</span>
+                        <span class="font-bold text-orange-600">1.5 Lakh+</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="text-gray-700">Economic Loss</span>
+                        <span class="font-bold text-yellow-600">₹3.8 Lakh Cr</span>
+                    </div>
+                `;
+                
+                warnings.innerHTML = `
+                    <li>Speeding vehicles in residential areas</li>
+                    <li>Distracted driving (mobile phone usage)</li>
+                    <li>Poor road conditions and visibility</li>
+                    <li>Drunk driving, especially at night</li>
+                    <li>Overloading of vehicles</li>
+                `;
+                
+                preventions.innerHTML = `
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-car-side mr-2"></i>For Drivers</h4>
+                        <p class="text-sm text-gray-600">• Always wear seatbelt • Never use phone while driving • Follow speed limits • Take breaks on long journeys</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-person-walking mr-2"></i>For Pedestrians</h4>
+                        <p class="text-sm text-gray-600">• Use zebra crossings • Make eye contact with drivers • Avoid headphones while crossing • Wear reflective clothing at night</p>
+                    </div>
+                `;
+                
+                emergency.innerHTML = `
+                    <li>Call police (100) and ambulance (108/102) immediately</li>
+                    <li>Do not move injured persons unless in immediate danger</li>
+                    <li>Provide first aid if trained - control bleeding, CPR if needed</li>
+                    <li>Take photos of the scene for insurance/legal purposes</li>
+                    <li>Exchange contact and insurance information with other parties</li>
+                `;
+                
+            } else if (type === 'waterlogging') {
+                title.textContent = 'Urban Waterlogging & Flooding';
+                subtitle.textContent = 'Monsoon Season Hazard';
+                
+                stats.innerHTML = `
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span class="text-gray-700">Cities Affected</span>
+                        <span class="font-bold text-blue-600">40+ Major Cities</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-cyan-50 rounded-lg">
+                        <span class="text-gray-700">Annual Damage Cost</span>
+                        <span class="font-bold text-cyan-600">₹14,000 Cr</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
+                        <span class="text-gray-700">Displaced People/Year</span>
+                        <span class="font-bold text-indigo-600">2 Million+</span>
+                    </div>
+                `;
+                
+                warnings.innerHTML = `
+                    <li>Heavy rainfall warnings from IMD</li>
+                    <li>Rising water levels in local water bodies</li>
+                    <li>Blocked drains and overflowing sewers</li>
+                    <li>Power outages in affected areas</li>
+                    <li>Road closures and traffic diversions</li>
+                `;
+                
+                preventions.innerHTML = `
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-home mr-2"></i>Home Preparation</h4>
+                        <p class="text-sm text-gray-600">• Clear drains and gutters • Sandbag doorways • Move valuables to upper floors • Keep emergency kit ready</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-car mr-2"></i>Travel Safety</h4>
+                        <p class="text-sm text-gray-600">• Check weather forecast • Avoid flooded roads • Don't attempt to drive through standing water • Keep emergency contacts handy</p>
+                    </div>
+                `;
+                
+                emergency.innerHTML = `
+                    <li>Move to higher ground immediately if flooding occurs</li>
+                    <li>Turn off electricity and gas supplies if safe to do so</li>
+                    <li>Do not walk or drive through flood waters</li>
+                    <li>Listen to local radio/TV for emergency information</li>
+                    <li>Contact disaster management helpline: 1077</li>
+                `;
+                
+            } else if (type === 'fire') {
+                title.textContent = 'Building & Industrial Fires';
+                subtitle.textContent = 'Year-round Hazard';
+                
+                stats.innerHTML = `
+                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                        <span class="text-gray-700">Annual Fire Incidents</span>
+                        <span class="font-bold text-red-600">25,000+</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                        <span class="text-gray-700">Fatalities (Yearly)</span>
+                        <span class="font-bold text-orange-600">18,000+</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+                        <span class="text-gray-700">Property Damage</span>
+                        <span class="font-bold text-yellow-600">₹10,000 Cr+</span>
+                    </div>
+                `;
+                
+                warnings.innerHTML = `
+                    <li>Smell of gas or burning</li>
+                    <li>Overheating electrical appliances</li>
+                    <li>Flickering lights or frequent fuse blows</li>
+                    <li>Accumulation of flammable materials</li>
+                    <li>Blocked fire exits or extinguishers</li>
+                `;
+                
+                preventions.innerHTML = `
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-bolt mr-2"></i>Electrical Safety</h4>
+                        <p class="text-sm text-gray-600">• Don't overload sockets • Check wiring regularly • Use certified appliances • Install circuit breakers</p>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-gray-800 mb-2"><i class="fa-solid fa-fire-extinguisher mr-2"></i>Fire Prevention</h4>
+                        <p class="text-sm text-gray-600">• Install smoke detectors • Keep extinguishers accessible • Store flammables properly • Conduct regular drills</p>
+                    </div>
+                `;
+                
+                emergency.innerHTML = `
+                    <li>Raise alarm and call fire brigade immediately (101)</li>
+                    <li>Use fire extinguisher only if safe and trained</li>
+                    <li>Stay low to avoid smoke inhalation</li>
+                    <li>Feel doors before opening - if hot, use alternative exit</li>
+                    <li>Never use elevators during a fire</li>
+                `;
+            }
+        }
+        
+        function hideDetails() {
+            document.getElementById('detailPanel').classList.add('hidden');
+        }
+
+        // SOS Emergency Functions
+        let sosCountdown = 5;
+        let sosTimer;
+        let sosProgressInterval;
+
+        function triggerSOS() {
+            // Reset countdown
+            sosCountdown = 5;
+            
+            // Show modal
+            const modal = document.getElementById('sosModal');
+            modal.classList.add('active');
+            
+            // Update countdown display
+            document.getElementById('sosCountdown').textContent = sosCountdown;
+            document.getElementById('countdownSeconds').textContent = sosCountdown;
+            
+            // Reset progress bar
+            const progressBar = document.getElementById('sosProgress');
+            progressBar.style.width = '0%';
+            
+            // Start countdown
+            sosTimer = setInterval(() => {
+                sosCountdown--;
+                document.getElementById('sosCountdown').textContent = sosCountdown;
+                document.getElementById('countdownSeconds').textContent = sosCountdown;
+                
+                if (sosCountdown <= 0) {
+                    clearInterval(sosTimer);
+                    sendSOSAlert();
+                }
+            }, 1000);
+            
+            // Animate progress bar
+            let progress = 0;
+            clearInterval(sosProgressInterval);
+            sosProgressInterval = setInterval(() => {
+                progress += 20; // 5 seconds = 100% progress
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(sosProgressInterval);
+                }
+            }, 1000);
+        }
+
+        function cancelSOS() {
+            // Clear timers
+            clearInterval(sosTimer);
+            clearInterval(sosProgressInterval);
+            
+            // Hide modal
+            document.getElementById('sosModal').classList.remove('active');
+            
+            // Show cancellation message
+            alert('SOS alert cancelled. Stay safe!');
+        }
+
+        function confirmSOS() {
+            // Clear timers
+            clearInterval(sosTimer);
+            clearInterval(sosProgressInterval);
+            
+            // Send alert immediately
+            sendSOSAlert();
+        }
+
+        function sendSOSAlert() {
+            // Get user location (simulated for demo)
+            const userLocation = getUserLocation();
+            
+            // Create emergency alert data
+            const emergencyData = {
+                type: 'SOS_EMERGENCY',
+                priority: 'CRITICAL',
+                timestamp: new Date().toISOString(),
+                location: userLocation,
+                status: 'ACTIVE',
+                recipient: ['POLICE_100', 'AMBULANCE_108', 'CITYGUARD_EMERGENCY', 'LOCAL_AUTHORITY'],
+                message: 'HIGH PRIORITY: SOS EMERGENCY ALERT triggered from CityGuard system. Immediate assistance required.'
+            };
+            
+            // Update modal to show sending state
+            document.querySelector('.sos-modal-content').classList.add('sos-success');
+            document.getElementById('sosCountdown').textContent = '✓';
+            document.getElementById('sosCountdown').style.color = '#10b981';
+            document.getElementById('countdownSeconds').parentElement.innerHTML = 
+                '<p class="text-green-600 font-bold">Emergency alert sent successfully!</p>';
+            
+            // Show SOS button as active
+            document.querySelector('.sos-button').classList.add('active');
+            
+            // Log to console (simulating API call)
+            console.log('🚨 EMERGENCY SOS ALERT SENT:', emergencyData);
+            console.log('📞 Alert sent to: Police (100), Ambulance (108), CityGuard Emergency Team');
+            
+            // Simulate API call to emergency services
+            setTimeout(() => {
+                // Hide modal after 3 seconds
+                document.getElementById('sosModal').classList.remove('active');
+                document.querySelector('.sos-modal-content').classList.remove('sos-success');
+                
+                // Show confirmation
+                alert(`🚨 EMERGENCY SOS ALERT SENT!\n\nLocation: ${userLocation}\n\nPolice, Ambulance, and Emergency Services have been notified.\n\nStay on the line if possible, help is on the way!`);
+                
+                // Reset SOS button after 10 seconds
+                setTimeout(() => {
+                    document.querySelector('.sos-button').classList.remove('active');
+                }, 10000);
+                
+            }, 3000);
+        }
+
+        function getUserLocation() {
+            // In a real app, this would use Geolocation API
+            // For demo, we'll simulate or use browser's geolocation if available
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        return `Lat: ${position.coords.latitude}, Lng: ${position.coords.longitude}`;
+                    },
+                    (error) => {
+                        console.log("Geolocation error:", error);
+                        return "Location approximated from IP";
+                    }
+                );
+            }
+            
+            // Default simulated location
+            const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'];
+            const randomCity = cities[Math.floor(Math.random() * cities.length)];
+            return `Approx. location: ${randomCity} (from device signal)`;
+        }
+
+        // Add keyboard shortcut for SOS (Alt+S)
+        document.addEventListener('keydown', function(event) {
+            if (event.altKey && event.key === 's') {
+                event.preventDefault();
+                triggerSOS();
+            }
+        });
+
+        // Make SOS button draggable on mobile for accessibility
+        let isDragging = false;
+        let startX, startY, initialX, initialY;
+
+        document.querySelector('.sos-button').addEventListener('mousedown', startDrag);
+        document.querySelector('.sos-button').addEventListener('touchstart', startDrag);
+
+        function startDrag(e) {
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            } else {
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+            
+            const sosButton = document.querySelector('.sos-button');
+            initialX = sosButton.offsetLeft;
+            initialY = sosButton.offsetTop;
+            
+            isDragging = true;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            
+            let currentX, currentY;
+            
+            if (e.type === 'touchmove') {
+                currentX = e.touches[0].clientX;
+                currentY = e.touches[0].clientY;
+            } else {
+                currentX = e.clientX;
+                currentY = e.clientY;
+            }
+            
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+            
+            const sosButton = document.querySelector('.sos-button');
+            const newX = initialX + dx;
+            const newY = initialY + dy;
+            
+            // Boundary checking
+            const maxX = window.innerWidth - sosButton.offsetWidth - 10;
+            const maxY = window.innerHeight - sosButton.offsetHeight - 10;
+            
+            sosButton.style.left = Math.min(Math.max(10, newX), maxX) + 'px';
+            sosButton.style.top = Math.min(Math.max(10, newY), maxY) + 'px';
+            sosButton.style.right = 'auto';
+            sosButton.style.bottom = 'auto';
+            sosButton.style.position = 'fixed';
+        }
+
+                function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchend', stopDrag);
+        }
+
+        // ====================
+        // SQL DATABASE CONNECTION SIMULATION
+        // ====================
+        
+        function simulateSQLConnection() {
+            const statusDiv = document.getElementById('sqlConnectionStatus');
+            const testBtn = document.querySelector('button[onclick="simulateSQLConnection()"]');
+            const liveQueriesDiv = document.getElementById('liveQueries');
+            
+            // Show loading state
+            const originalText = testBtn.innerHTML;
+            testBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Connecting to Database...';
+            testBtn.disabled = true;
+            
+            // Simulate connection delay
+            setTimeout(() => {
+                // Show success
+                statusDiv.classList.remove('hidden');
+                testBtn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Database Connected!';
+                testBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                testBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                testBtn.disabled = false;
+                
+                // Scroll to show the results
+                statusDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Start live query simulation
+                startLiveQuerySimulation(liveQueriesDiv);
+                
+                // Show success notification
+                setTimeout(() => {
+                    alert('✅ Database connection established!\n\n• Connected to: cityguard_db (MySQL 8.0.33)\n• 12 tables loaded\n• 1,247 incident records available');
+                }, 500);
+                
+            }, 2000);
+        }
+        
+        function startLiveQuerySimulation(liveQueriesDiv) {
+            const sampleQueries = [
+                {
+                    query: "INSERT INTO incidents_log (type, location, severity) VALUES ('traffic_accident', 'MG Road', 8);",
+                    result: "✓ 1 row inserted"
+                },
+                {
+                    query: "SELECT city, COUNT(*) as incidents FROM user_reports GROUP BY city ORDER BY incidents DESC LIMIT 5;",
+                    result: "→ Top 5 cities loaded"
+                },
+                {
+                    query: "CALL generate_daily_report();",
+                    result: "✓ Report generated successfully"
+                },
+                {
+                    query: "UPDATE traffic_data SET congestion_level='medium' WHERE zone='downtown';",
+                    result: "✓ Updated 15 zones"
+                },
+                {
+                    query: "SELECT * FROM emergency_alerts WHERE resolved = 0 AND priority = 'high';",
+                    result: "→ Found 3 active high-priority alerts"
+                },
+                {
+                    query: "ANALYZE TABLE sensor_readings;",
+                    result: "↻ Optimizing table..."
+                }
+            ];
+            
+            // Add first two queries
+            liveQueriesDiv.innerHTML = '';
+            
+            // Show queries every 3 seconds
+            let queryIndex = 0;
+            const queryInterval = setInterval(() => {
+                if (queryIndex < sampleQueries.length) {
+                    const query = sampleQueries[queryIndex];
+                    const queryElement = document.createElement('div');
+                    queryElement.className = 'text-sm text-gray-700 bg-white p-3 rounded-lg border animate-pulse';
+                    queryElement.innerHTML = `
+                        <span class="font-mono text-green-600">></span> 
+                        <span class="font-mono">${query.query}</span>
+                        <span class="text-gray-500 text-xs ml-2">${query.result}</span>
+                    `;
+                    
+                    liveQueriesDiv.appendChild(queryElement);
+                    
+                    // Remove animation after 1 second
+                    setTimeout(() => {
+                        queryElement.classList.remove('animate-pulse');
+                    }, 1000);
+                    
+                    // Scroll to latest query
+                    queryElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    
+                    queryIndex++;
+                } else {
+                    clearInterval(queryInterval);
+                    // Show completion message
+                    const completionMsg = document.createElement('div');
+                    completionMsg.className = 'text-center p-4 text-gray-500 text-sm';
+                    completionMsg.innerHTML = '<i class="fa-solid fa-flag-checkered mr-2"></i> Live query simulation complete';
+                    liveQueriesDiv.appendChild(completionMsg);
+                }
+            }, 3000);
+        }
+    </script>
+
+    <!-- FontAwesome CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</body>
+</html>
