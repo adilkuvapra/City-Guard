@@ -1,3 +1,35 @@
+# 🚦 CityGuard – Smart Urban Safety Platform
+
+**Live Demo:** 👉 https://city-guard.vercel.app/
+
+CityGuard is a smart traffic, hazard monitoring, and emergency alert platform built using HTML, CSS, JavaScript, and Tailwind CSS. It provides real-time monitoring, incident reporting, and an SOS emergency system for urban safety.
+
+---
+
+## 🔗 Links
+
+- 🌐 Live Website: https://city-guard.vercel.app/
+- 📁 GitHub Repository: https://github.com/adilkuvapra/City-Guard
+
+---
+
+## 🚀 Features
+
+- Real-time traffic & hazard visualization  
+- Interactive live map
+- Incident reporting system
+- SOS emergency button with location alerts
+- Safety awareness and tips
+
+---
+
+## 🛠️ Tech Stack
+
+- HTML
+- CSS (Tailwind CSS)
+- JavaScript
+- Vercel for deployment
+
 # 🚦 CityGuard – Smart Urban Safety & Emergency Response Platform
 
 CityGuard is a comprehensive **smart city safety platform** designed to improve urban safety through **real-time traffic monitoring, hazard detection, emergency SOS alerts, citizen reporting, and public awareness**.
